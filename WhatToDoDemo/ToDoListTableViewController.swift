@@ -10,14 +10,15 @@ import UIKit
 
 class ToDoListTableViewController: UITableViewController {
     
-    var itemArray = ["Play Game", "Play Sports", "Read Book"]
+    var itemArray = [ListItem]()
     let userDefault = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if let items = userDefault.array(forKey: "ToDiListArray") as? [String] {
-            itemArray = items
-        }
+//        if let items = userDefault.array(forKey: "ToDoListArray") as? [ListItem] {
+//            itemArray = items
+//        }
+        
 
     }
     // MARK: - Table view data source
@@ -34,10 +35,10 @@ class ToDoListTableViewController: UITableViewController {
 
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "toDoItemCell", for: indexPath)
-        
-        cell.textLabel?.text = itemArray[indexPath.row]
-        
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "toDoItemCell", for: indexPath)
+        let cell = UITableViewCell(style: .default, reuseIdentifier: "toDoItemCell")
+        cell.textLabel?.text = itemArray[indexPath.row].content
+        cell.accessoryType = itemArray[indexPath.row].marked ? .checkmark : .none
         return cell
     }
     
@@ -45,8 +46,10 @@ class ToDoListTableViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
         if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
             tableView.cellForRow(at: indexPath)?.accessoryType = .none
+            itemArray[indexPath.row].marked = false
         } else {
             tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+            itemArray[indexPath.row].marked = true
         }
     }
     
@@ -54,8 +57,11 @@ class ToDoListTableViewController: UITableViewController {
         var nextAdded = UITextField()
         let alert = UIAlertController(title: "Add New Item", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
-            self.itemArray.append(nextAdded.text!)
-            self.userDefault.set(self.itemArray, forKey: "ToDiListArray")
+            let item = ListItem()
+            item.content = nextAdded.text!
+            item.marked = false
+            self.itemArray.append(item)
+//            self.userDefault.set(self.itemArray, forKey: "ToDoListArray")
             self.tableView.reloadData()
         }
         alert.addAction(action)
