@@ -8,7 +8,7 @@
 
 import Foundation
 
-class ListItem {
+class ListItem: Encodable, Decodable {
     var content = ""
     var marked = false
 }
