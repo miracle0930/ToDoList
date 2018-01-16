@@ -7,12 +7,13 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class CatagoryTableViewController: UITableViewController {
 
-    var catagories = [Catagory]()
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    var catagories: Results<Catagory>?
+//    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let realm = try! Realm()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,25 +23,23 @@ class CatagoryTableViewController: UITableViewController {
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        return catagories.count
+        return catagories?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "catagoryCell", for: indexPath)
-        cell.textLabel?.text = catagories[indexPath.row].name
+        cell.textLabel?.text = catagories?[indexPath.row].name ?? "No Catagories Added Yet"
         return cell
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let destinationVC = segue.destination as! ToDoListTableViewController
         if let indexPath = tableView.indexPathForSelectedRow {
-            destinationVC.selectedCatagory = catagories[indexPath.row]
+            destinationVC.selectedCatagory = catagories?[indexPath.row]
         }
     }
     
@@ -57,31 +56,27 @@ class CatagoryTableViewController: UITableViewController {
         }
         let action = UIAlertAction(title: "Add New Catagory", style: .default) {
             (action) in
-            let catagory = Catagory(context: self.context)
+            let catagory = Catagory()
             catagory.name = nextAdded.text!
-            self.catagories.append(catagory)
-            self.saveData()
+            self.save(catagory: catagory)
             self.tableView.reloadData()
         }
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
     
-    func saveData() {
+    func save(catagory: Catagory) {
         do {
-            try context.save()
+            try realm.write {
+                realm.add(catagory)
+            }
         } catch {
             print(error)
         }
     }
     
-    func loadData(with request: NSFetchRequest<Catagory> = Catagory.fetchRequest()) {
-        do {
-            catagories = try context.fetch(request)
-        } catch {
-            print(error)
-        }
-        tableView.reloadData()
+    func loadData() {
+        catagories = realm.objects(Catagory.self)
     }
     
 }
