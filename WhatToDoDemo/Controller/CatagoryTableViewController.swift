@@ -8,16 +8,17 @@
 
 import UIKit
 import RealmSwift
+import SwipeCellKit
 
-class CatagoryTableViewController: UITableViewController {
+class CatagoryTableViewController: SwipeTableViewController {
 
     var catagories: Results<Catagory>?
-//    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     let realm = try! Realm()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         loadData()
+        tableView.rowHeight = 80.0
     }
 
     // MARK: - Table view data source
@@ -31,7 +32,7 @@ class CatagoryTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "catagoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         cell.textLabel?.text = catagories?[indexPath.row].name ?? "No Catagories Added Yet"
         return cell
     }
@@ -79,4 +80,17 @@ class CatagoryTableViewController: UITableViewController {
         catagories = realm.objects(Catagory.self)
     }
     
+    override func updateModel(at indexPath: IndexPath) {
+        if let toBeDeleted = catagories?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(toBeDeleted)
+                }
+            } catch {
+                print(error)
+            }
+        }
+    }
+    
 }
+
